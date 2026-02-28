@@ -3,29 +3,13 @@
 * { font-family: 'Inter', sans-serif; }
 /* Typography */
 .val       { font-weight: 600; line-height: 1; margin-top: 2px; }
-.val-xxl   { font-size: 4rem; }
 .val-sm    { font-size: 1rem; }
 .tnums     { font-variant-numeric: tabular-nums; }
-
-.ttl       { font-weight: 600; text-transform: uppercase; letter-spacing: 0.05em; font-size: 1rem; }
-.ttl-sm    { font-size: 0.875rem; }
 
 .lbl       { font-size: 0.9375rem; }
 .lbl-sm    { font-size: 0.8125rem; }
 .lbl-md    { font-size: 1.0625rem; }
 .lbl-gray  { color: #888; }
-
-.desc      { font-size: 1rem; }
-
-/* Separators */
-.sep       { height: 1px; background: #000; width: 100%; }
-.sep-v     { width: 1px; background: #000; align-self: stretch; }
-
-/* Equal panels (sep-v excluded) */
-
-/* Item rows */
-.item-row         { display: flex; gap: 0.5rem; align-items: baseline; }
-.item-row .meta   { flex-shrink: 0; }
 
 /* Section card with legend */
 .section-card { border: 1px solid #ccc; border-radius: 1rem; padding: 0.75rem; position: relative; }
@@ -42,7 +26,6 @@
 
 {%- capture svg_partly_cloudy -%}<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32"><circle cx="12" cy="9" r="4" fill="none" stroke="black" stroke-width="2"/><line x1="12" y1="1" x2="12" y2="3" stroke="black" stroke-width="2" stroke-linecap="round"/><line x1="6.3" y1="3.3" x2="7.7" y2="4.7" stroke="black" stroke-width="2" stroke-linecap="round"/><line x1="4" y1="9" x2="6" y2="9" stroke="black" stroke-width="2" stroke-linecap="round"/><line x1="6.3" y1="14.7" x2="7.7" y2="13.3" stroke="black" stroke-width="2" stroke-linecap="round"/><path fill="black" d="M10 26c-2.5 0-4.5-2-4.5-4.5 0-2.2 1.6-4 3.7-4.4C10 14 12.8 12 16 12c3.8 0 6.9 2.9 7.2 6.5 1.8.7 3.3 2.5 3.3 4.2 0 2.2-1.7 3.3-3.5 3.3H10z"/></svg>{%- endcapture -%}
 
-{%- capture svg_home -%}<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="black" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>{%- endcapture -%}
 
 <script src="https://trmnl.com/js/highcharts/12.3.0/highcharts.js"></script>
 
@@ -59,7 +42,7 @@
           <div class="flex flex-col flex-1">
             <div class="border-l-4 border-neutral-400 pl-3 py-1">
               <span class="lbl lbl-sm lbl-gray">Teplota</span>
-              <span class="val text-4xl tnums block" data-pixel-perfect="true">{{ sensors.indoor.temp }}&thinsp;°</span>
+              <span class="val text-4xl tnums block" data-pixel-perfect="true">{{ sensors.indoor.temp }}&thinsp;°C</span>
             </div>
             <div id="spark-temp" style="height: 90px; width: 100%; overflow: visible; margin-top: -4px;"></div>
           </div>
@@ -86,7 +69,7 @@
             <div class="flex flex-col flex-1">
               <div class="border-l-4 border-neutral-400 pl-3 py-1">
                 <span class="lbl lbl-sm lbl-gray">{{ room.name }}</span>
-                <span class="val text-2xl tnums block" data-pixel-perfect="true">{{ room.temp }}&thinsp;°</span>
+                <span class="val text-2xl tnums block" data-pixel-perfect="true">{{ room.temp }}&thinsp;°C</span>
               </div>
             </div>
           {% endfor %}
@@ -98,10 +81,10 @@
     <fieldset class="section-card flex flex-col gap-2" style="flex: 1 1 0; min-width: 0; height: 100%;">
       <legend>Venku</legend>
       <div class="flex gap-3 shrink-0">
-        <div class="flex flex-col flex-1">
+        <div class="flex flex-col flex-1.2">
           <div class="border-l-4 border-neutral-400 pl-3 py-1">
             <span class="lbl lbl-sm lbl-gray">Teplota</span>
-            <span class="val text-4xl tnums block" data-pixel-perfect="true">{{ sensors.outdoor.temp }}&thinsp;°</span>
+            <span class="val text-4xl tnums block" data-pixel-perfect="true">{{ sensors.outdoor.temp }}&thinsp;°C</span>
           </div>
         </div>
         <div class="flex flex-col flex-1">
@@ -117,7 +100,7 @@
           </div>
         </div>
       </div>
-      <div id="today-chart" style="flex: 1 1 0; min-width: 0; min-height: 60px;"></div>
+      <div id="today-chart" style="flex: 1 1 0; min-width: 0; min-height: 60px; overflow: hidden;"></div>
     </fieldset>
 
   </div>
@@ -277,10 +260,26 @@ function createTodayChart() {
   var hourly = {{ weather.today_hourly | json }};
   var categories = hourly.map(function(h) { return h.time; });
   var rawTemps = hourly.map(function(h) { return h.temp; });
-  var precip = hourly.map(function(h) { return h.precipitation_mm; });
+  var precip = hourly.map(function(h) {
+    return {
+      y: h.precipitation_mm,
+      dataLabels: {
+        enabled: h.precipitation_mm > 0,
+        format: '{y} mm',
+        style: { fontSize: '12px', fontWeight: '600', color: '#666', textOutline: 'none' },
+        y: 0
+      }
+    };
+  });
+  var rawPrecip = hourly.map(function(h) { return h.precipitation_mm; });
+  var pMax = Math.max.apply(null, rawPrecip) || 1;
+  var precipAxisMax = pMax / 0.2;
   var tMax = Math.max.apply(null, rawTemps);
   var tMin = Math.min.apply(null, rawTemps);
   var tRange = tMax - tMin || 1;
+  var tPad = tRange * 0.1 || 1;
+  var tempAxisMax = tMax + tPad;
+  var tempAxisMin = (tMin - 0.2 * tempAxisMax) / 0.8;
   var temps = rawTemps.map(function(t, i) {
     var show = (i % 3 === 0) || (i === rawTemps.length - 1);
     var isHigh = (t - tMin) / tRange > 0.7;
@@ -289,7 +288,7 @@ function createTodayChart() {
       dataLabels: {
         enabled: show,
         useHTML: true,
-        format: '<span style="background:#000;color:#fff;padding:1px 4px;border-radius:2px;font-size:14px;font-weight:600;">{y}°</span>',
+        format: '<span style="background:#000;color:#fff;padding:1px 4px;border-radius:2px;font-size:14px;font-weight:600;">{y}&thinsp;°C</span>',
         y: isHigh ? 15 : -12,
         overflow: 'allow',
         crop: false
@@ -305,7 +304,10 @@ function createTodayChart() {
       height: null
     },
     title: { text: null },
+    subtitle: { text: null },
     credits: { enabled: false },
+    exporting: { enabled: false },
+    navigation: { buttonOptions: { enabled: false } },
     legend: { enabled: false },
     tooltip: { enabled: false },
     xAxis: {
@@ -313,20 +315,25 @@ function createTodayChart() {
       lineColor: '#aaa',
       tickLength: 0,
       labels: {
-        step: 3,
-        format: '{value}:00',
-        style: { fontSize: '18px', color: '#666' }
+        useHTML: true,
+        rotation: 0,
+        step: 1,
+        formatter: function() { return this.pos % 3 === 0 ? '<span style="font-size:14px;color:#666;font-family:Inter,sans-serif">' + this.value + ':00</span>' : ''; },
+        y: 16
       }
     },
     yAxis: [{
       title: { text: null },
       labels: { enabled: false },
-      gridLineWidth: 0
+      gridLineWidth: 0,
+      min: tempAxisMin,
+      max: tempAxisMax
     }, {
       title: { text: null },
       labels: { enabled: false },
       opposite: true,
       min: 0,
+      max: precipAxisMax,
       gridLineWidth: 0
     }],
     plotOptions: {
@@ -349,8 +356,7 @@ function createTodayChart() {
       zIndex: 0,
       color: '#ccc',
       borderWidth: 0,
-      pointWidth: 9,
-      dataLabels: { enabled: false }
+      pointWidth: 9
     }]
   });
 }
