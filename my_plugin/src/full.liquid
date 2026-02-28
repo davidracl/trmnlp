@@ -2,7 +2,7 @@
 <style>
 * { font-family: 'Inter', sans-serif; }
 /* Typography */
-.val       { font-weight: 600; line-height: 1.1; }
+.val       { font-weight: 600; line-height: 1; margin-top: 2px; }
 .val-xxl   { font-size: 4rem; }
 .val-sm    { font-size: 1rem; }
 .tnums     { font-variant-numeric: tabular-nums; }
@@ -26,6 +26,10 @@
 /* Item rows */
 .item-row         { display: flex; gap: 0.5rem; align-items: baseline; }
 .item-row .meta   { flex-shrink: 0; }
+
+/* Section card with legend */
+.section-card { border: 1px solid #ccc; border-radius: 1rem; padding: 0.75rem; position: relative; }
+.section-card legend { font-weight: 600; text-transform: uppercase; letter-spacing: 0.05em; font-size: 0.8125rem; color: #888; padding: 0 0.5rem; margin-left: 0.5rem; }
 </style>
 
 {%- comment -%}=== Weather Icon SVGs ==={%- endcomment -%}
@@ -42,102 +46,233 @@
 
 <script src="https://trmnl.com/js/highcharts/12.3.0/highcharts.js"></script>
 
-<div class="flex flex-col gap-4 grow min-h-0 p-2">
+<div class="flex flex-col gap-4 grow min-h-0 p-2" style="position: relative;">
 
   {%- comment -%}=== TOP: Home Sensors ==={%- endcomment -%}
-  <div class="flex gap-4 top-panels">
+  <div class="flex gap-4 top-panels items-stretch">
 
     {%- comment -%}--- DOMA panel ---{%- endcomment -%}
-    <div class="flex flex-col gap-2" style="flex: 1.7 1 0; min-width: 0;">
-      <div class="flex items-center gap-4">
-        <span class="val val-xxl tnums" data-pixel-perfect="true">{{ sensors.indoor.temp }}°</span>
-        <div class="flex flex-col gap-1">
-          <span class="val text-3xl tnums !leading-none whitespace-nowrap">{{ sensors.indoor.humidity }}&thinsp;% <span class="lbl lbl-md lbl-gray">vlhkost</span></span>
-          <span class="val text-3xl tnums !leading-none whitespace-nowrap">{{ sensors.indoor.co2 }}&thinsp;<span class="text-lg">ppm</span> <span class="lbl lbl-md lbl-gray">CO₂</span></span>
-        </div>
-      </div>
-      <div class="flex justify-between grow items-center">
-        {% for room in sensors.rooms %}
-          <div class="flex flex-col items-center gap-0">
-            <span class="lbl lbl-md lbl-gray">{{ room.name }}</span>
-            <span class="val text-3xl tnums">{{ room.temp }}°</span>
+    <div class="flex flex-col gap-3" style="flex: 1.3 1 0; min-width: 0;">
+      <fieldset class="section-card flex flex-col gap-2">
+        <legend>Obývák</legend>
+        <div class="flex gap-3">
+          <div class="flex flex-col flex-1">
+            <div class="border-l-4 border-neutral-400 pl-3 py-1">
+              <span class="lbl lbl-sm lbl-gray">Teplota</span>
+              <span class="val text-4xl tnums block" data-pixel-perfect="true">{{ sensors.indoor.temp }}&thinsp;°</span>
+            </div>
+            <div id="spark-temp" style="height: 90px; width: 100%; overflow: visible; margin-top: -4px;"></div>
           </div>
-        {% endfor %}
-      </div>
-    </div>
-
-    <div class="sep-v"></div>
-
-    {%- comment -%}--- VENKU panel ---{%- endcomment -%}
-    <div class="flex flex-col gap-2" style="flex: 3 1 0; min-width: 0;">
-      <div class="flex grow min-h-0 gap-2">
-        <div class="flex flex-col shrink-0">
-          <span class="val val-xxl tnums" data-pixel-perfect="true">{{ sensors.outdoor.temp }}°</span>
-          <span class="val text-3xl tnums !leading-none whitespace-nowrap">{{ sensors.outdoor.humidity }}&thinsp;% <span class="lbl lbl-md lbl-gray">vlhkost</span></span>
-        </div>
-        <div id="today-chart" class="grow min-w-0 min-h-0"></div>
-      </div>
-    </div>
-
-  </div>
-
-  <div class="sep"></div>
-
-  {%- comment -%}=== 7-Day Forecast ==={%- endcomment -%}
-  <div class="grid grid-cols-7 gap-2">
-    {% for day in forecast %}
-      <div class="flex flex-col items-center gap-1">
-        <span class="lbl lbl-md">{{ day.day }} {{ day.date }}</span>
-        {% if day.icon == "sunny" %}{% assign d_icon = svg_sunny %}
-        {% elsif day.icon == "rainy" %}{% assign d_icon = svg_rainy %}
-        {% elsif day.icon == "partly_cloudy" %}{% assign d_icon = svg_partly_cloudy %}
-        {% else %}{% assign d_icon = svg_cloudy %}{% endif %}
-        <img src="data:image/svg+xml;base64,{{ d_icon | base64_encode }}" class="w-8 h-8">
-        <span class="val val-sm tnums">{{ day.temp_max }}° / {{ day.temp_min }}°</span>
-        <span class="lbl lbl-sm">{{ day.precipitation }}% · {{ day.precipitation_mm }} mm</span>
-      </div>
-    {% endfor %}
-  </div>
-
-  <div class="sep"></div>
-
-  {%- comment -%}=== BOTTOM: Calendar ==={%- endcomment -%}
-  <div class="flex flex-col gap-1 bg-neutral-200 px-4 py-3 rounded-xl overflow-hidden">
-    <span class="ttl">KALENDÁŘ</span>
-    <div class="flex gap-2">
-      <span class="lbl lbl-sm lbl-gray shrink-0" style="width: 3rem;">Dnes</span>
-      <div class="flex flex-col gap-1">
-        {% for event in events_today %}
-          <div class="item-row">
-            <span class="lbl lbl-sm tnums">{{ event.time }}</span>
-            <span class="desc">{{ event.title }}</span>
+          <div class="flex flex-col flex-1">
+            <div class="border-l-4 border-neutral-400 pl-3 py-1">
+              <span class="lbl lbl-sm lbl-gray">Vlhkost</span>
+              <span class="val text-4xl tnums block" data-pixel-perfect="true">{{ sensors.indoor.humidity }}&thinsp;%</span>
+            </div>
+            <div id="spark-humidity" style="height: 90px; width: 100%; overflow: visible; margin-top: -4px;"></div>
           </div>
-        {% endfor %}
-      </div>
-    </div>
-    {% if events_tomorrow.size > 0 %}
-      <div class="flex gap-2">
-        <span class="lbl lbl-sm lbl-gray shrink-0" style="width: 3rem;">Zítra</span>
-        <div class="flex flex-col gap-1">
-          {% for event in events_tomorrow %}
-            <div class="item-row">
-              <span class="lbl lbl-sm tnums">{{ event.time }}</span>
-              <span class="desc">{{ event.title }}</span>
+          <div class="flex flex-col flex-1">
+            <div class="border-l-4 border-neutral-400 pl-3 py-1">
+              <span class="lbl lbl-sm lbl-gray">CO₂</span>
+              <span class="val text-4xl tnums block" data-pixel-perfect="true">{{ sensors.indoor.co2 }}&thinsp;<span class="text-xl">ppm</span></span>
+            </div>
+            <div id="spark-co2" style="height: 90px; width: 100%; overflow: visible; margin-top: -4px;"></div>
+          </div>
+        </div>
+      </fieldset>
+      <fieldset class="section-card flex flex-col gap-2">
+        <legend>Další místnosti</legend>
+        <div class="flex gap-3">
+          {% for room in sensors.rooms %}
+            <div class="flex flex-col flex-1">
+              <div class="border-l-4 border-neutral-400 pl-3 py-1">
+                <span class="lbl lbl-sm lbl-gray">{{ room.name }}</span>
+                <span class="val text-2xl tnums block" data-pixel-perfect="true">{{ room.temp }}&thinsp;°</span>
+              </div>
             </div>
           {% endfor %}
         </div>
+      </fieldset>
+    </div>
+
+    {%- comment -%}--- VENKU panel ---{%- endcomment -%}
+    <fieldset class="section-card flex flex-col gap-2" style="flex: 1 1 0; min-width: 0; height: 100%;">
+      <legend>Venku</legend>
+      <div class="flex gap-3 shrink-0">
+        <div class="flex flex-col flex-1">
+          <div class="border-l-4 border-neutral-400 pl-3 py-1">
+            <span class="lbl lbl-sm lbl-gray">Teplota</span>
+            <span class="val text-4xl tnums block" data-pixel-perfect="true">{{ sensors.outdoor.temp }}&thinsp;°</span>
+          </div>
+        </div>
+        <div class="flex flex-col flex-1">
+          <div class="border-l-4 border-neutral-400 pl-3 py-1">
+            <span class="lbl lbl-sm lbl-gray">Vlhkost</span>
+            <span class="val text-4xl tnums block" data-pixel-perfect="true">{{ sensors.outdoor.humidity }}&thinsp;%</span>
+          </div>
+        </div>
+        <div class="flex flex-col flex-1">
+          <div class="border-l-4 border-neutral-400 pl-3 py-1">
+            <span class="lbl lbl-sm lbl-gray">UV index</span>
+            <span class="val text-4xl tnums block" data-pixel-perfect="true">{{ sensors.outdoor.uv }}</span>
+          </div>
+        </div>
       </div>
-    {% endif %}
+      <div id="today-chart" style="flex: 1 1 0; min-width: 0; min-height: 60px;"></div>
+    </fieldset>
+
   </div>
 
-  <div class="flex items-center px-4 py-1.5 bg-neutral-200 rounded-xl text-sm shrink-0">
-    <span class="text-gray-700">{{ current_date.day_name }} {{ current_date.day }}. {{ current_date.month }} {{ current_date.year }} · Svátek: {{ nameday }}</span>
-    <span class="ml-auto text-gray-700">Baterie {{ trmnl.device.battery }}%</span>
+  {%- comment -%}=== 7-Day Forecast ==={%- endcomment -%}
+  <fieldset class="section-card" style="padding-top: 1rem; padding-bottom: 0.75rem;">
+    <legend>Příštích 7 dní</legend>
+    <div class="grid grid-cols-7 gap-2">
+      {% for day in forecast %}
+        <div class="flex flex-col items-center gap-1.5">
+          <span class="lbl lbl-md">{{ day.day }} {{ day.date }}</span>
+          {% if day.icon == "sunny" %}{% assign d_icon = svg_sunny %}
+          {% elsif day.icon == "rainy" %}{% assign d_icon = svg_rainy %}
+          {% elsif day.icon == "partly_cloudy" %}{% assign d_icon = svg_partly_cloudy %}
+          {% else %}{% assign d_icon = svg_cloudy %}{% endif %}
+          <img src="data:image/svg+xml;base64,{{ d_icon | base64_encode }}" class="w-8 h-8">
+          <span class="val val-sm tnums">{{ day.temp_max }}° / {{ day.temp_min }}°</span>
+          <span class="lbl lbl-sm">{{ day.precipitation }}% · {{ day.precipitation_mm }} mm</span>
+        </div>
+      {% endfor %}
+    </div>
+  </fieldset>
+
+  {%- comment -%}=== BOTTOM: Calendar (Apple-style) ==={%- endcomment -%}
+  <div class="flex gap-4 grow min-h-0">
+
+    {%- comment -%}--- Dnes ---{%- endcomment -%}
+    <div class="flex flex-col flex-1 min-w-0">
+      <div class="flex items-baseline gap-2 mb-2">
+        <span style="font-size: 2rem; font-weight: 700; line-height: 1;" data-pixel-perfect="true">{{ current_date.day }}</span>
+        <span style="font-size: 0.9375rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.04em;">Dnes</span>
+      </div>
+      <div class="flex flex-col gap-1.5">
+        {% for event in events_today %}
+          {% if event.calendar == "work" %}{% assign cal_border = "#000" %}
+          {% elsif event.calendar == "family" %}{% assign cal_border = "#999" %}
+          {% else %}{% assign cal_border = "#bbb" %}{% endif %}
+          <div style="display: flex; align-items: stretch; background: #f3f3f3; border-radius: 0.5rem; overflow: hidden;">
+            <div style="width: 4px; background: {{ cal_border }}; flex-shrink: 0;"></div>
+            <div style="padding: 0.4rem 0.6rem; display: flex; align-items: baseline; gap: 0.5rem;">
+              <span style="font-size: 0.9375rem; font-weight: 500; line-height: 1.2;">{{ event.title }}</span>
+              <span class="tnums" style="font-size: 0.75rem; color: #888; white-space: nowrap;">{{ event.time }}{% if event.end_time %} – {{ event.end_time }}{% endif %}</span>
+            </div>
+          </div>
+        {% endfor %}
+      </div>
+    </div>
+
+    {%- comment -%}--- Separator ---{%- endcomment -%}
+    <div style="width: 1px; background: #ddd; align-self: stretch;"></div>
+
+    {%- comment -%}--- Zítra ---{%- endcomment -%}
+    {% if events_tomorrow.size > 0 %}
+    <div class="flex flex-col flex-1 min-w-0">
+      <div class="flex items-baseline gap-2 mb-2">
+        <span style="font-size: 2rem; font-weight: 700; line-height: 1; color: #999;" data-pixel-perfect="true">{{ current_date.day | plus: 1 }}</span>
+        <div class="flex flex-col">
+          <span style="font-size: 0.9375rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.04em; color: #888;">Zítra</span>
+        </div>
+      </div>
+      <div class="flex flex-col gap-1.5">
+        {% for event in events_tomorrow %}
+          {% if event.calendar == "work" %}{% assign cal_border = "#000" %}
+          {% elsif event.calendar == "family" %}{% assign cal_border = "#999" %}
+          {% else %}{% assign cal_border = "#bbb" %}{% endif %}
+          <div style="display: flex; align-items: stretch; background: #f3f3f3; border-radius: 0.5rem; overflow: hidden;">
+            <div style="width: 4px; background: {{ cal_border }}; flex-shrink: 0;"></div>
+            <div style="padding: 0.4rem 0.6rem; display: flex; align-items: baseline; gap: 0.5rem;">
+              <span style="font-size: 0.9375rem; font-weight: 500; line-height: 1.2;">{{ event.title }}</span>
+              <span class="tnums" style="font-size: 0.75rem; color: #888; white-space: nowrap;">{{ event.time }}{% if event.end_time %} – {{ event.end_time }}{% endif %}</span>
+            </div>
+          </div>
+        {% endfor %}
+      </div>
+    </div>
+    {% endif %}
+
+  </div>
+
+  <div style="position: absolute; bottom: 0.5rem; right: 0.5rem; display: flex; align-items: center; gap: 0.5rem; background: #e8e8e8; border-radius: 9999px; padding: 0.25rem 0.625rem; font-size: 0.75rem; color: #777;">
+    <span class="flex items-center gap-1">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16" width="12" height="12" fill="none" stroke="#999" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M1 8a7 7 0 0 1 13-3.5M15 8a7 7 0 0 1-13 3.5"/>
+        <polyline points="1,2 1,5 4,5"/>
+        <polyline points="15,14 15,11 12,11"/>
+      </svg>
+      {{ last_updated }}
+    </span>
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 40 20" width="32" height="16" fill="none" stroke="#999" stroke-width="1.5">
+      <rect x="1" y="2" width="34" height="16" rx="2"/>
+      <rect x="35" y="6" width="4" height="8" rx="1" fill="#999" stroke="none"/>
+      <rect x="2.5" y="3.5" width="{{ trmnl.device.battery | times: 31 | divided_by: 100 }}" height="13" rx="1" fill="#999" stroke="none"/>
+      <text x="18" y="14" text-anchor="middle" fill="white" stroke="none" font-size="10" font-weight="600" font-family="Inter, sans-serif">{{ trmnl.device.battery }}</text>
+    </svg>
   </div>
 
 </div>
 
 <script>
+function createSparkline(container, data, unit) {
+  var minVal = Math.min.apply(null, data);
+  var maxVal = Math.max.apply(null, data);
+  var minIdx = data.indexOf(minVal);
+  var maxIdx = data.indexOf(maxVal);
+  var last = data.length - 1;
+  var points = data.map(function(v, i) {
+    var isMin = (i === minIdx);
+    var isMax = (i === maxIdx);
+    var isFirst = (i === 0);
+    var isLast = (i === last);
+    return {
+      y: v,
+      marker: { enabled: isMin || isMax || isLast, radius: isLast ? 4 : 3, fillColor: '#000', symbol: 'circle' },
+      dataLabels: {
+        enabled: isMin || isMax,
+        format: '{y}' + (unit || ''),
+        style: { fontSize: '11px', fontWeight: '600', color: '#000', textOutline: 'none' },
+        y: isMax ? 1 : 24,
+        align: isFirst ? 'left' : (isLast ? 'right' : 'center'),
+        x: isFirst ? 4 : (isLast ? -4 : 0),
+        overflow: 'allow',
+        crop: false
+      }
+    };
+  });
+
+  Highcharts.chart(container, {
+    chart: { backgroundColor: 'transparent', animation: false, spacing: [8, 8, 12, 8], height: 90 },
+    title: { text: null },
+    credits: { enabled: false },
+    legend: { enabled: false },
+    tooltip: { enabled: false },
+    xAxis: { visible: false },
+    yAxis: { visible: false, gridLineWidth: 0, maxPadding: 0.1, minPadding: 0.15 },
+    plotOptions: { series: { animation: false, enableMouseTracking: false } },
+    series: [{
+      type: 'area',
+      data: points,
+      color: '#000',
+      lineWidth: 1.5,
+      marker: { enabled: false },
+      fillColor: { linearGradient: { x1: 0, y1: 0, x2: 0, y2: 1 }, stops: [[0, '#00000030'], [1, '#00000005']] }
+    }]
+  });
+}
+
+function createSparklines() {
+  var history = {{ sensors.indoor.history | json }};
+  if (history) {
+    if (history.temp) createSparkline('spark-temp', history.temp, '°');
+    if (history.humidity) createSparkline('spark-humidity', history.humidity, '%');
+    if (history.co2) createSparkline('spark-co2', history.co2, '');
+  }
+}
+
 function createTodayChart() {
   var hourly = {{ weather.today_hourly | json }};
   var categories = hourly.map(function(h) { return h.time; });
@@ -155,7 +290,7 @@ function createTodayChart() {
         enabled: show,
         useHTML: true,
         format: '<span style="background:#000;color:#fff;padding:1px 4px;border-radius:2px;font-size:14px;font-weight:600;">{y}°</span>',
-        y: isHigh ? 16 : -12,
+        y: isHigh ? 15 : -12,
         overflow: 'allow',
         crop: false
       }
@@ -186,8 +321,7 @@ function createTodayChart() {
     yAxis: [{
       title: { text: null },
       labels: { enabled: false },
-      gridLineColor: '#ccc',
-      gridLineDashStyle: 'ShortDot'
+      gridLineWidth: 0
     }, {
       title: { text: null },
       labels: { enabled: false },
@@ -221,10 +355,15 @@ function createTodayChart() {
   });
 }
 
-if (typeof Highcharts !== 'undefined') {
+function initCharts() {
   createTodayChart();
+  createSparklines();
+}
+
+if (typeof Highcharts !== 'undefined') {
+  initCharts();
 } else {
-  document.querySelector('script[src*="highcharts"]').addEventListener('load', createTodayChart);
+  document.querySelector('script[src*="highcharts"]').addEventListener('load', initCharts);
 }
 </script>
 

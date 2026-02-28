@@ -22,6 +22,7 @@ variables:
     year: 2026
 
   nameday: "Alexandr"
+  last_updated: "14:30"
 
   weather:
     temp: 3
@@ -161,17 +162,31 @@ variables:
 
   events_today:
     - time: "10:00"
+      end_time: "10:45"
       title: "Schůzka s Petrem"
+      calendar: "work"
+    - time: "12:30"
+      end_time: "13:30"
+      title: "Oběd s klientem"
+      calendar: "work"
     - time: "14:00"
+      end_time: "14:30"
       title: "Doktor - kontrola"
-    - time: "16:30"
-      title: "Vyzvednutí ze školy"
+      calendar: "personal"
 
   events_tomorrow:
     - time: "09:00"
+      end_time: "09:45"
       title: "Dentista"
+      calendar: "personal"
     - time: "11:00"
+      end_time: "13:00"
       title: "Oběd s rodinou"
+      calendar: "family"
+    - time: "15:00"
+      end_time: "16:00"
+      title: "Sprint planning"
+      calendar: "work"
 
   tasks:
     - text: "Nakoupit potraviny"
@@ -192,9 +207,92 @@ variables:
       temp: 22.3
       humidity: 45
       co2: 8888
+      history:
+        temp:
+          [
+            20.1,
+            20.0,
+            19.8,
+            19.5,
+            19.8,
+            20.2,
+            20.8,
+            21.2,
+            21.5,
+            21.8,
+            22.0,
+            22.3,
+            22.5,
+            22.3,
+            22.1,
+            22.0,
+            21.8,
+            21.5,
+            21.2,
+            21.0,
+            20.8,
+            20.5,
+            20.3,
+            22.3,
+          ]
+        humidity:
+          [
+            52,
+            51,
+            50,
+            49,
+            48,
+            47,
+            46,
+            45,
+            44,
+            43,
+            42,
+            41,
+            42,
+            43,
+            44,
+            45,
+            46,
+            47,
+            48,
+            49,
+            50,
+            51,
+            50,
+            45,
+          ]
+        co2:
+          [
+            520,
+            480,
+            450,
+            430,
+            450,
+            580,
+            720,
+            850,
+            920,
+            980,
+            1050,
+            1100,
+            650,
+            580,
+            620,
+            750,
+            880,
+            950,
+            1020,
+            880,
+            720,
+            650,
+            580,
+            888,
+          ]
     outdoor:
       temp: 23.1
       humidity: 78
+      uv: 5
     rooms:
       - name: "Ložnice"
         temp: 19.8
